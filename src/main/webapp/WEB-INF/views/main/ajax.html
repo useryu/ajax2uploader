@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>利用Ajax上传二进制文件</title>
+<style>
+progress {
+    width: 200px;
+    height: 20px;
+    border: 1px solid #0064B4;  
+    background-color:#e6e6e6;
+    color: #0064B4; /*IE10*/
+}
+/*ie6-ie9*/
+progress ie {
+    display:block;
+    height: 100%;
+    background: #0064B4;
+}
+progress ie span{
+    color:white;
+}
+
+progress::-moz-progress-bar { background: #0064B4; }
+progress::-webkit-progress-bar { background: #e6e6e6; }
+progress::-webkit-progress-value  { background: #0064B4; }
+</style>
+<script type="text/javascript">
+    window.onload = function() {
+    	var index=0;
+    	var d=new Date();
+    	var batch=d.getTime();
+        var file = null,
+            fileName = null,
+            xhr = null;
+        function upload(files) {
+        	var url="${base}/ajax/fileUploader";
+            var pm = document.getElementById("p");
+            pm.value=0;
+            for(var i = 0; i < files.length; i++){
+            	file=files[i];
+	            fileName = encodeURIComponent(file.name,"utf8");
+	            var result=document.getElementById("result");
+	        	var p=pm.cloneNode(true);
+	        	p.style.display="block";
+	        	p.firstChild.innerHTML=file.name;
+	        	p.id="p"+index;
+	        	result.appendChild(p);
+	            xhr = new XMLHttpRequest();
+	            xhr.open("POST", url);
+	            xhr.setRequestHeader("filename"	, fileName);
+	            xhr.setRequestHeader("batch"	, batch);
+	            xhr.setRequestHeader("index"	, index);
+	            xhr.index=index;
+	            xhr.onprogress = function(event){
+	                if (event.lengthComputable) {
+	                	var pEle=document.getElementById("p"+this.index);
+	                	var percentComplete = event.loaded / event.total;
+			            pEle.lastChild.value=percentComplete*100;
+			        }
+	            };
+	            xhr.onload=function(e){
+                	var pEle=document.getElementById("p"+this.index);
+		            pEle.lastChild.value=100;
+	            	console.log( e.target.response );
+	            }
+	            xhr.send(file); // 直接上传二进制文件
+	            index++;
+            }
+            
+        }
+
+        
+        var fileInput = document.getElementById("fileInput");
+        fileInput.onchange = function() {
+	        var files=this.files;
+            upload(files);
+        };
+        
+        
+        
+        handleFiles = function(files) {  
+            upload(files);
+        }  
+        document.addEventListener("dragenter", function(e){  
+            dropbox.style.borderColor = 'gray';  
+        }, false);  
+        document.addEventListener("dragleave", function(e){  
+            dropbox.style.borderColor = 'silver';  
+        }, false);  
+        dropbox.addEventListener("dragenter", function(e){  
+            dropbox.style.borderColor = 'gray';  
+            dropbox.style.backgroundColor = 'white';  
+        }, false);  
+        dropbox.addEventListener("dragleave", function(e){  
+            dropbox.style.backgroundColor = 'transparent';  
+        }, false);  
+        dropbox.addEventListener("dragenter", function(e){  
+            e.stopPropagation();  
+            e.preventDefault();  
+        }, false);  
+        dropbox.addEventListener("dragover", function(e){  
+            e.stopPropagation();  
+            e.preventDefault();  
+        }, false);  
+        dropbox.addEventListener("drop", function(e){  
+            e.stopPropagation();  
+            e.preventDefault();  
+               
+            handleFiles(e.dataTransfer.files);  
+               
+            submit.disabled = false;  
+        }, false);  
+        
+    };
+</script>
+</head>
+<body>
+    <div name="image" id="dropbox" style="min-width:300px;min-height:100px;border:3px dashed silver;">把文件拖到这上传</div>  
+    <input type="file" id="fileInput" multiple>
+    <br/>
+    上传进度：
+    <div id="result"/></div>
+    <div id="p" style="display:none;"><span></span><progress max="100" value="0"><ie style="width:0%;"></ie></progress></div>
+</body>
+</html>
