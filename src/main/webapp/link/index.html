@@ -1,0 +1,117 @@
+<!doctype>
+<html>
+<head>
+<title>工作流图形化设计或查看</title>
+	<script type="text/javascript" src="esl.js"></script>
+	<script type="text/javascript" src="zrender.js"></script>
+	<script type="text/javascript" src="prototype.min.js"></script>
+	<script type="text/javascript" src="Libra.Workflow.Graph.js"></script>
+	<script type="text/javascript" src="Libra.Workflow.Activity.js"></script>
+	<script type="text/javascript" src="Libra.Workflow.Transition.js"></script>
+<style>
+body{margin:0;}
+.context-menu {
+	position:absolute;
+	width:150px;
+	background-color:#eee;
+	border:1px solid #bbb;
+	border-radius:3px;
+	font-size:12px;
+}
+.context-menu ul{
+	padding:5px;
+	margin:0;
+}
+.context-menu ul li{
+	list-style:none;
+}
+.context-menu ul li a{
+	display:block;
+	text-decoration:none;
+	color:#555;
+	line-height:2em;
+	padding:0 0 0 6px;
+}
+.context-menu ul li a:hover{
+	color:#000;
+	background-color:#ccc;
+}
+</style>
+</head>
+<body>
+<div id="canvas" style="background-image:url(./canvasbg.gif)"></div>
+<script type="text/javascript">
+/*
+var filePath = './zrender';
+require.config({
+	paths:{ 
+		zrender: filePath,
+		'zrender/tool/color': filePath,
+		'zrender/Group': filePath,
+		'zrender/shape/Circle': filePath,
+		'zrender/shape/Text': filePath,
+		'zrender/shape/BrokenLine': filePath,
+		'zrender/shape/Image': filePath,
+		'zrender/shape/Rectangle': filePath,
+		'zrender/shape/Polygon': filePath,
+		'zrender/shape/Polyline': filePath
+	}
+});
+*/
+
+var activities = [
+	new Libra.Workflow.StartActivity({'id':'0755d21f-672e-4289-9c4e-a6c800c89fc5', 'position':{x:88, y:60}, 'title':'开始'}),
+	new Libra.Workflow.ActionAssemblyActivity({'id':'c28dc449-50c9-440f-b539-a6c800c8af01', 'position':{x:88, y:160}, 'title':'初始审批'}),
+	new Libra.Workflow.ManualActivity({'id':'6b475718-572c-4141-b6f7-a6c800d9cefd', 'position':{x:88, y:260}, 'title':'直接领导审批'}),
+	new Libra.Workflow.ManualActivity({'id':'6b475718-572c-4141-b6f7-a6c800d9cef1', 'position':{x:88, y:660}, 'title':'结束'})
+];
+
+var transitions = [
+	new Libra.Workflow.Transition({'id':'db2faea5-81f2-4958-a075-a6c800ee41c1', 'from':'0755d21f-672e-4289-9c4e-a6c800c89fc5', 'fromAngle': -5, 'to':'c28dc449-50c9-440f-b539-a6c800c8af01', 'toAngle': -1, 'title':'无条件'}),
+	new Libra.Workflow.Transition({'id':'c6a3680f-4343-4599-bd16-a6c8017b536e', 'from':'c28dc449-50c9-440f-b539-a6c800c8af01', 'fromAngle': -5, 'to':'6b475718-572c-4141-b6f7-a6c800d9cefd', 'toAngle': 1, 'title':'无条件'}),
+	new Libra.Workflow.Transition({'id':'6b475718-572c-4141-b6f7-a6c800d9cef3', 'from':'6b475718-572c-4141-b6f7-a6c800d9cefd', 'fromAngle': -5, 'to':'6b475718-572c-4141-b6f7-a6c800d9cef1', 'toAngle': 1, 'title':'无条件'})
+];
+
+require([
+	'zrender', 
+	'zrender/tool/color',
+	'zrender/Group',
+	'zrender/shape/Circle',
+	'zrender/shape/Rectangle',
+	'zrender/shape/Polygon',
+	'zrender/shape/Polyline'],
+
+	function(zrender, color, Group, Circle, Rectangle, Polygon, Polyline){
+
+		var canvas = $('canvas');
+
+		var createOptions = {
+				canvas: {
+					element: canvas
+			    }
+			};
+
+	    var type = {
+				zrender: zrender,
+				tool: {
+					color: color
+				},
+				Group: Group,
+				Shape: {
+					Rectangle: Rectangle,
+					Circle: Circle,
+					Polygon: Polygon,
+					Polyline: Polyline
+				}
+			};
+
+		var graph = new Libra.Workflow.Graph(type, createOptions);
+		activities.each(function(activity){graph.addActivity(activity);});
+		transitions.each(function(transition){graph.addTransition(transition);});
+		graph.init();
+		graph.render();
+	}
+);
+</script>
+</body>
+</html>
